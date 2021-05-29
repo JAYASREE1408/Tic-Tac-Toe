@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href='https://fonts.googleapis.com/css?family=Courgette' rel='stylesheet'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+</head>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@0,500;1,400&display=swap');
+
+* {   
+  font-family:"courgette";
+}
+
+.container {
+    background-color: black;
+    width: 506px;
+    padding: 50px 0 80px;
+    margin: 25px auto;
+    border-radius: 20px 20px;
+    box-shadow: 10px 10px 30px black;
+
+}
+
+body {
+    background-color: white;
+    color: rgb(104, 102, 102);
+}
+
+.header {
+    text-align: center;
+    font-weight: bold;
+}
+
+.board {
+    width: 306px;
+    height: 306px;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 20px 20px;
+}
+
+.square{
+    width: 98px;
+    height: 98px;
+    background-color: white;
+    border-radius: 10px;
+    margin: 2px;
+}
+
+.square:hover {
+    cursor: pointer;
+    background-color: #6f84a0;
+}
+
+button {
+  border: none;
+  outline: none;
+  padding: 16px 32px;
+  margin: auto;
+  border-radius: 8px;
+  background-image:linear-gradient(to right,#ff00b3,rgb(192, 237, 255));
+  color: #0f1719;
+  font-weight: bolder;
+  font-size: 18px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+button:hover {
+  box-shadow: 0px 0px 30px #52004e;
+  background-image:linear-gradient(to right,rgb(192, 237, 255),#ff00b3);
+  color: #000000;
+  box-shadow: 0px 0px 20px white;
+}
+
+button:active {
+  background: white;
+  color: black;
+}
+
+.player-one {
+    background-color: orange;
+}
+
+.player-two {
+    background-color: rgb(0, 255, 242);
+}
+
+.player-one:hover {
+    cursor: initial;
+    background-color: orange;
+}
+
+.player-two:hover {
+    cursor: initial;
+    background-color: rgb(0, 255, 242);
+}
+
+.message {
+    text-align: center;
+}
+
+.reset-button {
+    text-align: center;
+    margin-top: 10px;
+}
+</style>
+<body>
+    <div class="container">
+        <div class="header">
+          <h2>Tic-Tac-Toe</h2>
+          <div class="players">
+            <button type="button" id="one-player">One Player</button>
+            <button type button id="two-players">Two Players</button>
+          </div>
+        </div>
+        <div class="board"></div>
+        <div class="message">Your turn</div>
+        <div class="game-over"></div>
+        <div class="reset-button">
+          <button type="reset" id="reset">Reset</button>
+        </div>
+      </div>
+</body>
+<script>
+   
+const board = document.querySelector('.board')
+const onePlayerBtn = document.querySelector('#one-player')
+const twoPlayerBtn = document.querySelector('#two-players')
+const message = document.querySelector('.message')
+const resetBtn = document.querySelector('#reset')
+let numberOfPlayers = 1
+let turns = 0
+let gameOver = false
+
+// arrays of winning combinations
+const winningCombinations = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+]
+
+// create the board
+for (let i = 0; i < 9; i++) {
+    const square = document.createElement('div')
+    square.classList.add('square')
+    square.dataset.squareId = i
+    board.appendChild(square)
+}
+const squares = Array.from(document.querySelectorAll('.square'))
+
+// one player button
+onePlayerBtn.addEventListener("click", () => {
+    reset()
+    numberOfPlayers = 1
+    message.innerText = "Your turn"
+    
+})
+
+// two player button
+twoPlayerBtn.addEventListener("click", () => {
+    reset()
+    numberOfPlayers = 2
+    message.innerText = "Player One's turn"
+})
+
+// create event listener for squares
+document.addEventListener("click", e => {
+    if (gameOver === true) return
+    if (!e.target.matches('.square')) return
+    if (e.target.matches('.player-one')) return
+    if (e.target.matches('.player-two')) return
+    if(numberOfPlayers === 1) onePlayer(e)
+    if(numberOfPlayers === 2) twoPlayers(e)
+})
+
+// event listener for reset button
+resetBtn.addEventListener("click", reset)
+
+// if one player, play with computer
+function onePlayer(e) {
+    e.target.classList.add('player-one')
+    checkForWinner()
+    if(!gameOver) {
+        const emptySquares = squares.filter (square => {
+            return !square.classList.contains('player-one') && !square.classList.contains('player-two')
+        })
+        console.log(emptySquares)
+        if (emptySquares.length !== 0) {
+            message.innerText = "Computer's turn"
+            computer(emptySquares)
+            checkForWinner() 
+        } else {
+           message.innerText = "Game Over"
+            gameOver = true
+        }
+    }
+}
+
+// computer player
+function computer(emptySquares) {
+    setTimeout(() => {
+        let random = Math.round(Math.random() * (emptySquares.length-1))
+        if (random === -1) random = random + 1
+        emptySquares[random].classList.add('player-two')
+        message.innerText = "Your turn"
+    }, 1000)
+    
+}
+
+// if two players, take it in turns to play
+function twoPlayers(e) {
+    if (turns % 2 === 0) {
+        e.target.classList.add('player-one')
+        message.innerText = "Player Two's turn"
+        checkForWinner()
+        } else {
+            e.target.classList.add('player-two')
+            message.innerText = "Player One's turn"
+            checkForWinner()
+        } turns ++
+        if (turns === squares.length  && gameOver === false) {
+            message.innerText = "Game Over"
+            gameOver = true
+        }
+}
+
+// check for a winning combination
+function checkForWinner() {
+    winningCombinations.forEach(combination => {
+        if (combination.every(index => squares[index].classList.contains('player-one'))) {
+            message.innerText = "Player One wins!"
+            gameOver = true
+        } else if (combination.every(index => squares[index].classList.contains('player-two'))) {
+            message.innerText = "Player Two wins!"
+            gameOver = true
+        } 
+    })
+}
+
+// reset the game
+function reset() {
+    squares.forEach(square => {
+        square.classList.remove('player-one')
+        square.classList.remove('player-two')
+        message.innerText = "Your turn"
+        if (numberOfPlayers === 2) message.innerText = "Player One's turn"
+        turns = 0
+        gameOver = false
+    })
+}
+
+</script>
+</html>
